@@ -21,16 +21,23 @@ class MainWindow : public QMainWindow
 
 public:
     MainWindow();
+    virtual void paint(QPainter *) {}
 
     QImage updateCanvas;
-    QPainter painter;
+
+    bool preferImage() const { return m_prefer_image; }
 
 public slots:
+
+    void setPreferImage(bool pi) { m_prefer_image = pi; }
 
 protected:
     void paintEvent(QPaintEvent *event) override;
     void mousePressEvent(QMouseEvent *event) override;
     void resizeEvent(QResizeEvent* event) override;
+
+    QPixmap m_tile;
+    bool m_prefer_image;
 
 private slots:
     void newFile();
@@ -41,6 +48,10 @@ private slots:
 private:
     void createMenus();
     void createActions();
+    void resizeImage(QImage *image, const QSize &newSize);
+
+    const int oppacity = 0;
+    const QColor bg_image_color = QColor(0,0,0,oppacity);
 
     Line *line;
     Circle *circle;

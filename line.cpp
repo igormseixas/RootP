@@ -1,6 +1,8 @@
 #include "line.h"
 #include <math.h>
 
+#include<QPainter>
+
 Line::Line()
 {
     //renk = qRgb(255,0,0);
@@ -33,15 +35,12 @@ void Line::dda(QPoint *firstPoint, QPoint *secondPoint, QImage *canvas){
 
     //Set Pixel.
     canvas->setPixel(round(x),round(y), qRgb(0,255,0));
-    //update();
-    //QApplication::processEvents();
 
     for(k=0; k<steps; ++k){
         x = x+x_incr;
         y = y+y_incr;
 
         canvas->setPixel(round(x),round(y), qRgb(0,255,0));
-        //update();
     }
 }
 
