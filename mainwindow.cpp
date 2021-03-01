@@ -139,8 +139,20 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
 void MainWindow::createMenus(){
     fileMenu = menuBar()->addMenu(tr("&File"));
     fileMenu->addAction(newAct);
+    fileMenu->addAction(saveAct);
+    fileMenu->addAction(saveasAct);
+    fileMenu->addSeparator();
+    fileMenu->addAction(exitAct);
 
     transformationMenu = menuBar()->addMenu(tr("&Transformation"));
+    transformationMenu->addAction(translateAct);
+    transformationMenu->addAction(rotateAct);
+    transformationMenu->addAction(scaleAct);
+
+    reflectionMenu = transformationMenu->addMenu(tr("&Reflection"));
+    reflectionMenu->addAction(reflectxAct);
+    reflectionMenu->addAction(reflectyAct);
+    reflectionMenu->addAction(reflectxyAct);
 
     rasterizationMenu = menuBar()->addMenu(tr("&Rasterization"));
     rasterizationMenu->addAction(lineddaAct);
@@ -148,9 +160,11 @@ void MainWindow::createMenus(){
     rasterizationMenu->addAction(circlebresenhamAct);
 
     cutsMenu = menuBar()->addMenu(tr("Cuts"));
+    cutsMenu->addAction(cohensutherAct);
+    cutsMenu->addAction(liangbarskyAct);
 
     helpMenu = menuBar()->addMenu(tr("&Help"));
-    //helpMenu->addAction(aboutAct);
+    helpMenu->addAction(aboutAct);
 }
 
 void MainWindow::createActions(){
@@ -158,6 +172,24 @@ void MainWindow::createActions(){
     newAct->setShortcuts(QKeySequence::New);
     newAct->setStatusTip("Create a new file");
     connect(newAct, &QAction::triggered, this, &MainWindow::newFile);
+
+    saveAct = new QAction(tr("&Save"), this);
+
+    saveasAct = new QAction(tr("&Save As"), this);
+
+    exitAct = new QAction(tr("&Exit"), this);
+
+    translateAct = new QAction(tr("&Translate"), this);
+
+    rotateAct = new QAction(tr("&Rotate"), this);
+
+    scaleAct = new QAction(tr("&Scale"), this);
+
+    reflectxAct = new QAction(tr("&Reflection X"), this);
+
+    reflectyAct = new QAction(tr("&Reflection Y"), this);
+
+    reflectxyAct = new QAction(tr("&Reflection XY"), this);
 
     lineddaAct = new QAction(tr("&Line DDA"), this);
     lineddaAct->setStatusTip("Draw a line using a DDA Algorithm");
@@ -170,11 +202,16 @@ void MainWindow::createActions(){
     circlebresenhamAct = new QAction(tr("&Circle Bresenham"), this);
     circlebresenhamAct->setStatusTip("Draw a circle using a Bresenham Algorithm");
     connect(circlebresenhamAct, &QAction::triggered, this, &MainWindow::circleBresenham);
+
+    cohensutherAct = new QAction(tr("&Code Regions/Cohen-Sutherland"), this);
+    liangbarskyAct = new QAction(tr("&Parametric Equations/Liang-Barsky"), this);
+
+    aboutAct = new QAction(tr("&About"), this);
 }
 
 void MainWindow::newFile()
 {
-    infoLabel->setText(tr("Invoked <b>File|New</b>"));
+    //infoLabel->setText(tr("Invoked <b>File|New</b>"));
 }
 
 void MainWindow::lineDDA(){

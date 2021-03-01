@@ -61,14 +61,31 @@ private:
 
     QMenu *fileMenu;
     QMenu *transformationMenu;
+    QMenu *reflectionMenu;
     QMenu *rasterizationMenu;
     QMenu *cutsMenu;
     QMenu *helpMenu;
 
     QAction *newAct;
+    QAction *saveAct;
+    QAction *saveasAct;
+    QAction *exitAct;
+
+    QAction *translateAct;
+    QAction *rotateAct;
+    QAction *scaleAct;
+    QAction *reflectxAct;
+    QAction *reflectyAct;
+    QAction *reflectxyAct;
+
     QAction *lineddaAct;
     QAction *linebresenhamAct;
     QAction *circlebresenhamAct;
+
+    QAction *cohensutherAct;
+    QAction *liangbarskyAct;
+
+    QAction *aboutAct;
 
     QLabel *infoLabel;
 };
