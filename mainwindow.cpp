@@ -198,6 +198,7 @@ void MainWindow::createActions(){
     linebresenhamAct = new QAction(tr("&Line Bresenham"), this);
     linebresenhamAct->setStatusTip("Draw a line using a Bresenham Algorithm");
     connect(linebresenhamAct, &QAction::triggered, this, &MainWindow::lineBresenham);
+    //connect(linebresenhamAct, SIGNAL(triggered()), this, SLOT(lineBresenham()));
 
     circlebresenhamAct = new QAction(tr("&Circle Bresenham"), this);
     circlebresenhamAct->setStatusTip("Draw a circle using a Bresenham Algorithm");
