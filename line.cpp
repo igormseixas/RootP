@@ -17,6 +17,9 @@ void Line::dda(QPoint *firstPoint, QPoint *secondPoint, QImage *canvas){
     int dx, dy, k;
     double x_incr, y_incr, x, y, steps;
 
+    QPainter painter(canvas);
+    //painter.setPen(QPen(Qt::blue, 3, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+
     //Inicialization.
     dx = secondPoint->x() - firstPoint->x();
     dy = secondPoint->y() - firstPoint->y();
@@ -34,13 +37,15 @@ void Line::dda(QPoint *firstPoint, QPoint *secondPoint, QImage *canvas){
     x = firstPoint->x(); y = firstPoint->y();
 
     //Set Pixel.
-    canvas->setPixel(round(x),round(y), qRgb(0,255,0));
+    //canvas->setPixel(round(x),round(y), qRgb(0,255,0));
+    painter.drawPoint(round(x),round(y));
 
     for(k=0; k<steps; ++k){
         x = x+x_incr;
         y = y+y_incr;
 
-        canvas->setPixel(round(x),round(y), qRgb(0,255,0));
+        //canvas->setPixel(round(x),round(y), qRgb(0,255,0));
+        painter.drawPoint(round(x),round(y));
     }
 }
 
