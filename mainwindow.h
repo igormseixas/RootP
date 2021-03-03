@@ -33,7 +33,11 @@ public slots:
 
 protected:
     void paintEvent(QPaintEvent *event) override;
+
     void mousePressEvent(QMouseEvent *event) override;
+    void mouseMoveEvent(QMouseEvent *event) override;
+    void mouseReleaseEvent(QMouseEvent *event) override;
+
     void resizeEvent(QResizeEvent* event) override;
 
     QPixmap m_tile;
@@ -41,11 +45,17 @@ protected:
 
 private slots:
     void newFile();
+
+    void transformationTranslate();
+
     void lineDDA();
     void lineBresenham();
     void circleBresenham();
 
 private:
+    bool selectionStarted;
+    QRect selectionRect;
+
     void createMenus();
     void createActions();
     void resizeImage(QImage *image, const QSize &newSize);

@@ -12,12 +12,14 @@ SOURCES += \
     circle.cpp \
     line.cpp \
     main.cpp \
-    mainwindow.cpp
+    mainwindow.cpp \
+    transformation.cpp
 
 HEADERS += \
     circle.h \
     line.h \
-    mainwindow.h
+    mainwindow.h \
+    transformation.h
 
 FORMS += \
     mainwindow.ui
