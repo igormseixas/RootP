@@ -5,6 +5,8 @@
 
 MainWindow::MainWindow()
 {
+    selectionStarted = false;
+
     line = new Line();
     circle = new Circle();
 
@@ -100,6 +102,11 @@ void MainWindow::paintEvent(QPaintEvent *event){
     }
 
     painter.drawImage(QPoint(0,0), updateCanvas);
+    painter.drawRect(selectionRect);
+
+    //QImage tmpImage = updateCanvas.copy(selectionRect);
+    //painter.drawImage(QPoint(60,60),tmpImage);
+    //painter.drawLine(50,50,600,600);
 }
 
 void MainWindow::resizeEvent(QResizeEvent* event)
@@ -134,6 +141,27 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
         secondPoint = event->pos();
         counter = 0;
     }
+
+    if (event->button()==Qt::RightButton){
+        if (selectionRect.contains(event->pos())) transformationMenu->exec(this->mapToGlobal(event->pos()));
+    }else{
+        selectionStarted=true;
+        selectionRect.setTopLeft(event->pos());
+        selectionRect.setBottomRight(event->pos());
+    }
+}
+
+void MainWindow::mouseMoveEvent(QMouseEvent *event)
+{
+    if (selectionStarted){
+        selectionRect.setBottomRight(event->pos());
+        repaint();
+    }
+}
+
+void MainWindow::mouseReleaseEvent(QMouseEvent *)
+{
+    selectionStarted=false;
 }
 
 void MainWindow::createMenus(){
@@ -180,6 +208,8 @@ void MainWindow::createActions(){
     exitAct = new QAction(tr("&Exit"), this);
 
     translateAct = new QAction(tr("&Translate"), this);
+    translateAct->setStatusTip("Translate image");
+    connect(translateAct, &QAction::triggered, this, &MainWindow::transformationTranslate);
 
     rotateAct = new QAction(tr("&Rotate"), this);
 
@@ -212,7 +242,29 @@ void MainWindow::createActions(){
 
 void MainWindow::newFile()
 {
-    //infoLabel->setText(tr("Invoked <b>File|New</b>"));
+    updateCanvas.fill(bg_image_color);
+    update();
+}
+
+void MainWindow::transformationTranslate(){
+    //QPixmap img;
+    QPainter p(&updateCanvas);
+    p.save();
+    //p.drawLine(40,40,200,200);
+    //p.translate(60, 60);
+    //p.drawRect(selectionRect);
+    //p.draw
+    //update();
+    QRect tmp(selectionRect);
+    //tmp.translate(100,0);
+    //p.drawImage(tmp, updateCanvas, selectionRect);
+
+    QImage img;
+    img = updateCanvas.copy(selectionRect);
+    p.drawImage(QPoint(50,50), img);
+
+    update();
+    //repaint();
 }
 
 void MainWindow::lineDDA(){

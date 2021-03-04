@@ -18,7 +18,7 @@ void Line::dda(QPoint *firstPoint, QPoint *secondPoint, QImage *canvas){
     double x_incr, y_incr, x, y, steps;
 
     QPainter painter(canvas);
-    //painter.setPen(QPen(Qt::blue, 3, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+    painter.setPen(QPen(Qt::blue, 3, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
 
     //Inicialization.
     dx = secondPoint->x() - firstPoint->x();
