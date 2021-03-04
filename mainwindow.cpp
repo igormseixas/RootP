@@ -256,8 +256,12 @@ void MainWindow::transformationTranslate(){
     //p.draw
     //update();
     QRect tmp(selectionRect);
-    tmp.translate(100,0);
-    p.drawImage(tmp, updateCanvas, selectionRect);
+    //tmp.translate(100,0);
+    //p.drawImage(tmp, updateCanvas, selectionRect);
+
+    QImage img;
+    img = updateCanvas.copy(selectionRect);
+    p.drawImage(QPoint(50,50), img);
 
     update();
     //repaint();
