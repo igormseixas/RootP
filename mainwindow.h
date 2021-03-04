@@ -1,12 +1,12 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include <QList>
 #include <QMainWindow>
 #include <QMouseEvent>
 #include <QPainter>
 
-#include <line.h>
-#include <circle.h>
+#include <canvas.h>
 
 QT_BEGIN_NAMESPACE
 class QAction;
@@ -21,45 +21,56 @@ class MainWindow : public QMainWindow
 
 public:
     MainWindow();
-    virtual void paint(QPainter *) {}
 
     QImage updateCanvas;
 
-    bool preferImage() const { return m_prefer_image; }
-
 public slots:
 
-    void setPreferImage(bool pi) { m_prefer_image = pi; }
-
 protected:
+    //void closeEvent(QCloseEvent *event) override;
     void paintEvent(QPaintEvent *event) override;
+
     void mousePressEvent(QMouseEvent *event) override;
-    void resizeEvent(QResizeEvent* event) override;
+    void mouseMoveEvent(QMouseEvent *event) override;
+    void mouseReleaseEvent(QMouseEvent *event) override;
+
+    bool preferWhiteBackground() const { return m_prefer_image; }
 
     QPixmap m_tile;
-    bool m_prefer_image;
+    bool m_prefer_image = false; //True if prefer White BackGround
 
 private slots:
-    void newFile();
-    void lineDDA();
-    void lineBresenham();
-    void circleBresenham();
+    void open();
+    void save();
+    void penColor();
+    void penWidth();
+    void about();
+
+    void transformationTranslate();
 
 private:
+    Canvas *canvas;
+
     void createMenus();
     void createActions();
-    void resizeImage(QImage *image, const QSize &newSize);
 
     const int oppacity = 0;
     const QColor bg_image_color = QColor(0,0,0,oppacity);
 
-    Line *line;
-    Circle *circle;
+    // Will check if changes have occurred since last save
+    bool maybeSave();
+    // Opens the Save dialog and saves
+    bool saveFile(const QByteArray &fileFormat);
 
     QPoint firstPoint, secondPoint;
     int counter = 0;
 
+    bool selectionStarted;
+    QRect selectionRect;
+
+    QMenu *saveAsMenu;
     QMenu *fileMenu;
+    QMenu *optionMenu;
     QMenu *transformationMenu;
     QMenu *reflectionMenu;
     QMenu *rasterizationMenu;
@@ -67,9 +78,13 @@ private:
     QMenu *helpMenu;
 
     QAction *newAct;
-    QAction *saveAct;
-    QAction *saveasAct;
+    QAction *openAct;
+    QList<QAction *> saveAsActs;
+    QAction *printAct;
     QAction *exitAct;
+
+    QAction *penColorAct;
+    QAction *penWidthAct;
 
     QAction *translateAct;
     QAction *rotateAct;
@@ -78,6 +93,7 @@ private:
     QAction *reflectyAct;
     QAction *reflectxyAct;
 
+    QActionGroup *rasterizationMenuGroup;
     QAction *lineddaAct;
     QAction *linebresenhamAct;
     QAction *circlebresenhamAct;

@@ -14,8 +14,8 @@ public:
     QRgb renk;
 
     //Algorithms
-    void dda(QPoint *, QPoint *, QImage *);
-    void bresenham(QPoint *, QPoint *, QImage *);
+    void dda(const QPoint *, const QPoint *, QPainter *);
+    void bresenham(const QPoint *, const QPoint *, QPainter *);
 
 protected:
 

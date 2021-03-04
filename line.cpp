@@ -5,20 +5,17 @@
 
 Line::Line()
 {
-    //renk = qRgb(255,0,0);
+
 }
 
 /**
  * @brief Line::dda
  * Function to implement the DDA algorithm of a Line.
  */
-void Line::dda(QPoint *firstPoint, QPoint *secondPoint, QImage *canvas){
+void Line::dda(const QPoint *firstPoint, const QPoint *secondPoint, QPainter *canvas){
     //Variables.
     int dx, dy, k;
     double x_incr, y_incr, x, y, steps;
-
-    QPainter painter(canvas);
-    //painter.setPen(QPen(Qt::blue, 3, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
 
     //Inicialization.
     dx = secondPoint->x() - firstPoint->x();
@@ -38,14 +35,14 @@ void Line::dda(QPoint *firstPoint, QPoint *secondPoint, QImage *canvas){
 
     //Set Pixel.
     //canvas->setPixel(round(x),round(y), qRgb(0,255,0));
-    painter.drawPoint(round(x),round(y));
+    canvas->drawPoint(round(x),round(y));
 
     for(k=0; k<steps; ++k){
         x = x+x_incr;
         y = y+y_incr;
 
         //canvas->setPixel(round(x),round(y), qRgb(0,255,0));
-        painter.drawPoint(round(x),round(y));
+        canvas->drawPoint(round(x),round(y));
     }
 }
 
@@ -53,7 +50,7 @@ void Line::dda(QPoint *firstPoint, QPoint *secondPoint, QImage *canvas){
  * @brief Line::bresenham
  * Function to implement the Bresenham algorithm of a Line.
  */
-void Line::bresenham(QPoint *firstPoint, QPoint *secondPoint, QImage *canvas){
+void Line::bresenham(const QPoint *firstPoint, const QPoint *secondPoint, QPainter *canvas){
     //Variables.
     int x1, y1, x2, y2,
         dx, dy, x, y, i,
@@ -82,7 +79,7 @@ void Line::bresenham(QPoint *firstPoint, QPoint *secondPoint, QImage *canvas){
     x = x1; y = y1;
 
     //Set Pixel.
-    canvas->setPixel(round(x),round(y), qRgb(255,0,0));
+    canvas->drawPoint(round(x),round(y));
 
     if (dy < dx){
         p = 2*dy-dx;
@@ -99,7 +96,7 @@ void Line::bresenham(QPoint *firstPoint, QPoint *secondPoint, QImage *canvas){
         }
 
         //Set Pixel.
-        canvas->setPixel(round(x),round(y), qRgb(255,0,0));
+        canvas->drawPoint(round(x),round(y));
         }
     }else {
         p = 2*dx-dy;
@@ -114,7 +111,7 @@ void Line::bresenham(QPoint *firstPoint, QPoint *secondPoint, QImage *canvas){
             p+= const2;
         }
         //Set Pixel.
-        canvas->setPixel(round(x),round(y), qRgb(255,0,0));
+        canvas->drawPoint(round(x),round(y));
         }
     }
 }

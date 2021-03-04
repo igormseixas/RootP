@@ -1,14 +1,18 @@
+#include <QtWidgets>
+#include <QPainterPath>
+
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
-#include <QPainterPath>
-
 MainWindow::MainWindow()
 {
-    line = new Line();
-    circle = new Circle();
+    selectionStarted = false;
+
+    canvas = new Canvas;
+    setCentralWidget(canvas);
 
     setWindowTitle(tr("RootP"));
+    setMinimumSize(160, 160);
     resize(800, 600);
 
     m_tile = QPixmap(128, 128);
@@ -21,46 +25,113 @@ MainWindow::MainWindow()
 
     createActions();
     createMenus();
-    QImage canvas(size(), QImage::Format_ARGB32_Premultiplied);
-    updateCanvas = canvas;
+    QImage image(size(), QImage::Format_ARGB32_Premultiplied);
+    updateCanvas = image;
     updateCanvas.fill(bg_image_color);
     //updateCanvas.fill(Qt::transparent);
 
 }
 
+/*
+// User tried to close the app
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+    // If they try to close maybeSave() returns true
+    // if no changes have been made and the app closes
+    if (maybeSave()) {
+        event->accept();
+    } else {
+
+        // If there have been changes ignore the event
+        event->ignore();
+    }
+}
+*/
+
+// Check if the current image has been changed and then
+// open a dialog to open a file
+void MainWindow::open()
+{
+    // Check if changes have been made since last save
+    // maybeSave() returns true if no changes have been made
+    if (maybeSave()) {
+
+        // Get the file to open from a dialog
+        // tr sets the window title to Open File
+        // QDir opens the current dirctory
+        QString fileName = QFileDialog::getOpenFileName(this,
+                                   tr("Open File"), QDir::currentPath());
+
+        // If we have a file name load the image and place
+        // it in the scribbleArea
+        if (!fileName.isEmpty())
+            canvas->openImage(fileName);
+    }
+}
+
+// Called when the user clicks Save As in the menu
+void MainWindow::save()
+{
+    // A QAction represents the action of the user clicking
+    QAction *action = qobject_cast<QAction *>(sender());
+
+    // Stores the array of bytes of the users data
+    QByteArray fileFormat = action->data().toByteArray();
+
+    // Pass it to be saved
+    saveFile(fileFormat);
+}
+
+// Opens a dialog to change the pen color
+void MainWindow::penColor()
+{
+    // Store the chosen color from the dialog
+    QColor newColor = QColorDialog::getColor(canvas->penColor());
+
+    // If a valid color set it
+    if (newColor.isValid())
+        canvas->setPenColor(newColor);
+}
+
+// Opens a dialog that allows the user to change the pen width
+void MainWindow::penWidth()
+{
+    // Stores button value
+    bool ok;
+
+    // tr("Scribble") is the title
+    // the next tr is the text to display
+    // Get the current pen width
+    // Define the min, max, step and ok button
+    int newWidth = QInputDialog::getInt(this, tr("Scribble"),
+                                        tr("Select pen width:"),
+                                        canvas->penWidth(),
+                                        1, 50, 1, &ok);
+    // Change the pen width
+    if (ok)
+        canvas->setPenWidth(newWidth);
+}
+
+// Open an about dialog
+void MainWindow::about()
+{
+    // Window title and text to display
+    QMessageBox::about(this, tr("About RootP"),
+            tr("<p>Computer Graphics App-Project</p>"));
+}
+
 void MainWindow::paintEvent(QPaintEvent *event){
 
     static QImage *static_image = nullptr;
-
     QPainter painter;
 
-    if (preferImage()){
-        if (!static_image || static_image->size() != size()) {
-            delete static_image;
-            static_image = new QImage(size(), QImage::Format_RGB32);
-            static_image->fill(qRgb(255,255,255));
-        }
-        painter.begin(static_image);
-
-        int o = 10;
-
-        QBrush bg = palette().brush(QPalette::Window);
-        painter.fillRect(0, 0, o, o, bg);
-        painter.fillRect(width() - o, 0, o, o, bg);
-        painter.fillRect(0, height() - o, o, o, bg);
-        painter.fillRect(width() - o, height() - o, o, o, bg);
-    }else{
-        static_image = new QImage(size(), QImage::Format_RGB32);
-        static_image->fill(qRgb(255,255,255));
-        painter.begin(this);
-    }
+    painter.begin(this);
 
     painter.setClipRect(event->rect());
-
     painter.setRenderHint(QPainter::Antialiasing);
 
+    //Draw rounded areas in the Canvas.
     QPainterPath clipPath;
-
     QRect r = rect();
     qreal left = r.x() + 1;
     qreal top = r.y() + 23;
@@ -80,69 +151,70 @@ void MainWindow::paintEvent(QPaintEvent *event){
 
     painter.drawTiledPixmap(rect(), m_tile);
 
-    // client painting
-
-    paint(&painter);
-
+    //Client painting and make border thicker.
     painter.restore();
-
     painter.save();
 
+    //Round the corner.
     int level = 180;
     painter.setPen(QPen(QColor(level, level, level), 2));
     painter.setBrush(Qt::NoBrush);
     painter.drawPath(clipPath);
 
-    if(preferImage()){
+    if(preferWhiteBackground()){
+        static_image = new QImage(size(), QImage::Format_RGB32);
+        static_image->fill(qRgb(255,255,255));
+
         painter.end();
         painter.begin(this);
         painter.drawImage(event->rect(), *static_image, event->rect());
     }
 
     painter.drawImage(QPoint(0,0), updateCanvas);
-}
-
-void MainWindow::resizeEvent(QResizeEvent* event)
-{
-    if (width() > updateCanvas.width() || height() > updateCanvas.height()) {
-        int newWidth = qMax(width() + 128, updateCanvas.width());
-        int newHeight = qMax(height() + 128, updateCanvas.height());
-        resizeImage(&updateCanvas, QSize(newWidth, newHeight));
-        update();
-    }
-    QMainWindow::resizeEvent(event);
-}
-
-void MainWindow::resizeImage(QImage *image, const QSize &newSize)
-{
-    if (image->size() == newSize)
-        return;
-
-    QImage newImage(newSize, QImage::Format_ARGB32_Premultiplied);
-    newImage.fill(bg_image_color);
-    QPainter painter(&newImage);
-    painter.drawImage(QPoint(0, 0), *image);
-    *image = newImage;
+    painter.drawRect(selectionRect);
 }
 
 void MainWindow::mousePressEvent(QMouseEvent *event)
 {
-    if (counter == 0 ) {
-        firstPoint = event->pos();
-        counter ++;
+
+    if (event->button()==Qt::RightButton){
+        if (selectionRect.contains(event->pos())) transformationMenu->exec(this->mapToGlobal(event->pos()));
     }else{
-        secondPoint = event->pos();
-        counter = 0;
+        selectionStarted=true;
+        selectionRect.setTopLeft(event->pos());
+        selectionRect.setBottomRight(event->pos());
     }
 }
 
+void MainWindow::mouseMoveEvent(QMouseEvent *event)
+{
+    if (selectionStarted){
+        selectionRect.setBottomRight(event->pos());
+        repaint();
+    }
+}
+
+void MainWindow::mouseReleaseEvent(QMouseEvent *)
+{
+    selectionStarted=false;
+}
+
 void MainWindow::createMenus(){
+    // Create Save As option and the list of file types
+    saveAsMenu = new QMenu(tr("&Save As"), this);
+    foreach (QAction *action, saveAsActs)
+    saveAsMenu->addAction(action);
+
     fileMenu = menuBar()->addMenu(tr("&File"));
     fileMenu->addAction(newAct);
-    fileMenu->addAction(saveAct);
-    fileMenu->addAction(saveasAct);
+    fileMenu->addAction(openAct);
+    fileMenu->addMenu(saveAsMenu);
     fileMenu->addSeparator();
     fileMenu->addAction(exitAct);
+
+    optionMenu = menuBar()->addMenu(tr("&Options"));
+    optionMenu->addAction(penColorAct);
+    optionMenu->addAction(penWidthAct);
 
     transformationMenu = menuBar()->addMenu(tr("&Transformation"));
     transformationMenu->addAction(translateAct);
@@ -168,18 +240,47 @@ void MainWindow::createMenus(){
 }
 
 void MainWindow::createActions(){
+    //File Menu Acts.
     newAct = new QAction(tr("&New"), this);
     newAct->setShortcuts(QKeySequence::New);
     newAct->setStatusTip("Create a new file");
-    connect(newAct, &QAction::triggered, this, &MainWindow::newFile);
+    connect(newAct, &QAction::triggered, canvas, &Canvas::clearImage);
 
-    saveAct = new QAction(tr("&Save"), this);
+    openAct = new QAction(tr("&Open..."), this);
+    openAct->setShortcuts(QKeySequence::Open);
+    connect(openAct, SIGNAL(triggered()), this, SLOT(open()));
+    foreach (QByteArray format, QImageWriter::supportedImageFormats()) {
+        QString text = tr("%1...").arg(QString(format).toUpper());
 
-    saveasAct = new QAction(tr("&Save As"), this);
+        QAction *action = new QAction(text, this);
+
+        action->setData(format);
+
+        connect(action, SIGNAL(triggered()), this, SLOT(save()));
+
+        saveAsActs.append(action);
+    }
+
+    printAct = new QAction(tr("&Print..."), this);
+    connect(printAct, SIGNAL(triggered()), canvas, SLOT(print()));
 
     exitAct = new QAction(tr("&Exit"), this);
+    exitAct->setShortcuts(QKeySequence::Quit);
+    connect(exitAct, SIGNAL(triggered()), this, SLOT(close()));
+    //END File Menu Acts.
 
+    //Option Menu Acts.
+    penColorAct = new QAction(tr("&Pen Color..."), this);
+    connect(penColorAct, SIGNAL(triggered()), this, SLOT(penColor()));
+
+    penWidthAct = new QAction(tr("Pen &Width..."), this);
+    connect(penWidthAct, SIGNAL(triggered()), this, SLOT(penWidth()));
+    //END Option Menu Acts.
+
+    //Transformation Menu Acts.
     translateAct = new QAction(tr("&Translate"), this);
+    translateAct->setStatusTip("Translate image");
+    connect(translateAct, &QAction::triggered, this, &MainWindow::transformationTranslate);
 
     rotateAct = new QAction(tr("&Rotate"), this);
 
@@ -190,43 +291,113 @@ void MainWindow::createActions(){
     reflectyAct = new QAction(tr("&Reflection Y"), this);
 
     reflectxyAct = new QAction(tr("&Reflection XY"), this);
+    //END Transformation Menu Acts.
 
+    //Rasterization Menu Acts.
     lineddaAct = new QAction(tr("&Line DDA"), this);
     lineddaAct->setStatusTip("Draw a line using a DDA Algorithm");
-    connect(lineddaAct, &QAction::triggered, this, &MainWindow::lineDDA);
+    lineddaAct->setCheckable(true);
+    //connect(lineddaAct, &QAction::triggered, this, &MainWindow::lineDDA);
+    connect(lineddaAct, &QAction::toggled, canvas, &Canvas::setLineDDA);
 
     linebresenhamAct = new QAction(tr("&Line Bresenham"), this);
     linebresenhamAct->setStatusTip("Draw a line using a Bresenham Algorithm");
-    connect(linebresenhamAct, &QAction::triggered, this, &MainWindow::lineBresenham);
-    //connect(linebresenhamAct, SIGNAL(triggered()), this, SLOT(lineBresenham()));
+    linebresenhamAct->setCheckable(true);
+    //connect(linebresenhamAct, &QAction::triggered, this, &MainWindow::lineBresenham);
+    connect(linebresenhamAct, &QAction::toggled, canvas, &Canvas::setLineBresenham);
 
     circlebresenhamAct = new QAction(tr("&Circle Bresenham"), this);
     circlebresenhamAct->setStatusTip("Draw a circle using a Bresenham Algorithm");
-    connect(circlebresenhamAct, &QAction::triggered, this, &MainWindow::circleBresenham);
+    circlebresenhamAct->setCheckable(true);
+    connect(circlebresenhamAct, &QAction::toggled, canvas, &Canvas::setCircleBresenham);
+    //END Rasterization Menu Acts.
 
+    //Cuts Menu Acts.
     cohensutherAct = new QAction(tr("&Code Regions/Cohen-Sutherland"), this);
     liangbarskyAct = new QAction(tr("&Parametric Equations/Liang-Barsky"), this);
+    //END Cuts Menu Acts.
 
+    //Help Menu Acts.
     aboutAct = new QAction(tr("&About"), this);
+    connect(aboutAct, SIGNAL(triggered()), this, SLOT(about()));
+    //END Help Menu Acts.
+
+    //Define Groups
+    rasterizationMenuGroup = new QActionGroup(this);
+    //rasterizationMenuGroup->setExclusionPolicy(QActionGroup::ExclusionPolicy::ExclusiveOptional);
+    rasterizationMenuGroup->addAction(lineddaAct);
+    rasterizationMenuGroup->addAction(linebresenhamAct);
+    rasterizationMenuGroup->addAction(circlebresenhamAct);
 }
 
-void MainWindow::newFile()
+bool MainWindow::maybeSave()
 {
-    //infoLabel->setText(tr("Invoked <b>File|New</b>"));
+    // Check for changes since last save
+    if (canvas->isModified()) {
+       QMessageBox::StandardButton ret;
+
+       // Scribble is the title
+       // Add text and the buttons
+       ret = QMessageBox::warning(this, tr("Scribble"),
+                          tr("The image has been modified.\n"
+                             "Do you want to save your changes?"),
+                          QMessageBox::Save | QMessageBox::Discard
+                          | QMessageBox::Cancel);
+
+       // If save button clicked call for file to be saved
+        if (ret == QMessageBox::Save) {
+            return saveFile("png");
+
+        // If cancel do nothing
+        } else if (ret == QMessageBox::Cancel) {
+            return false;
+        }
+    }
+    return true;
 }
 
-void MainWindow::lineDDA(){
-    line->dda(&firstPoint, &secondPoint, &updateCanvas);
-    update();
+bool MainWindow::saveFile(const QByteArray &fileFormat)
+{
+    // Define path, name and default file type
+    QString initialPath = QDir::currentPath() + "/untitled." + fileFormat;
+
+    // Get selected file from dialog
+    // Add the proper file formats and extensions
+    QString fileName = QFileDialog::getSaveFileName(this, tr("Save As"),
+                               initialPath,
+                               tr("%1 Files (*.%2);;All Files (*)")
+                               .arg(QString::fromLatin1(fileFormat.toUpper()))
+                               .arg(QString::fromLatin1(fileFormat)));
+
+    // If no file do nothing
+    if (fileName.isEmpty()) {
+        return false;
+    } else {
+
+        // Call for the file to be saved
+        return canvas->saveImage(fileName, fileFormat.constData());
+    }
 }
 
-void MainWindow::lineBresenham(){
-    line->bresenham(&firstPoint, &secondPoint, &updateCanvas);
-    update();
-}
+void MainWindow::transformationTranslate()
+{
+    //QPixmap img;
+    QPainter p(&updateCanvas);
+    p.save();
+    //p.drawLine(40,40,200,200);
+    //p.translate(60, 60);
+    //p.drawRect(selectionRect);
+    //p.draw
+    //update();
+    QRect tmp(selectionRect);
+    //tmp.translate(100,0);
+    //p.drawImage(tmp, updateCanvas, selectionRect);
 
-void MainWindow::circleBresenham(){
-    circle->bresenham(&firstPoint, &secondPoint, &updateCanvas);
+    QImage img;
+    img = updateCanvas.copy(selectionRect);
+    p.drawImage(QPoint(50,50), img);
+
     update();
+    //repaint();
 }
 
