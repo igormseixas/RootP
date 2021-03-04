@@ -20,8 +20,13 @@ Canvas::Canvas(QWidget *parent) : QWidget(parent)
     myPenWidth = 3;
     myPenColor = Qt::black;
 
+    //Set selection retangle as false
+    selectionStarted = false;
+
     //Set the access menus as false
     m_freedraw = false;
+    m_select = false;
+    m_transformationTranslate = false;
     m_linedda = false;
     m_linebresenham = false;
     m_circlebresenham = false;
@@ -60,6 +65,17 @@ bool Canvas::saveImage(const QString &fileName, const char *fileFormat)
     }
 }
 
+// Used to set to free Draw in canvas
+void Canvas::setFreeDraw(bool new_mFreeDraw)
+{
+    m_freedraw = new_mFreeDraw;
+}
+// Used to select a rectangle
+void Canvas::setSelect(bool new_mSelect)
+{
+    m_select = new_mSelect;
+}
+
 // Used to change the pen color
 void Canvas::setPenColor(const QColor &newColor)
 {
@@ -72,29 +88,38 @@ void Canvas::setPenWidth(int newWidth)
     myPenWidth = newWidth;
 }
 
+// Used to set transformation translate at menu.
+void Canvas::setTransformationTranslate(bool new_mTransformationTranslate)
+{
+    m_transformationTranslate = new_mTransformationTranslate;
+}
+
 // Used to set if the menu Line DDA is accessed.
 void Canvas::setLineDDA(bool new_mLinedda)
 {
     m_linedda = new_mLinedda;
-    update();
+    counter = 0;
 }
 
 // Used to set if the menu Line Bresenham is accessed.
 void Canvas::setLineBresenham(bool new_mLineBresenham)
 {
     m_linebresenham = new_mLineBresenham;
+    counter = 0;
 }
 
 // Used to set if the menu Circle Bresenham is accessed.
 void Canvas::setCircleBresenham(bool new_mCircleBresenham)
 {
     m_circlebresenham = new_mCircleBresenham;
+    counter = 0;
 }
 
 // Color the image area with white
 void Canvas::clearImage()
 {
     image.fill(bg_image_color);
+    selectionRect = QRect();
     modified = true;
     update();
 }
@@ -104,6 +129,13 @@ void Canvas::clearImage()
 // Set that we are currently drawing
 void Canvas::mousePressEvent(QMouseEvent *event)
 {
+    //Free Draw.
+    if (event->button() == Qt::LeftButton && m_freedraw) {
+        lastPoint = event->pos();
+        scribbling = true;
+    }
+
+    //First and Second Clicks.
     if (counter == 0 ) {
         firstPoint = event->pos();
         counter ++;
@@ -112,9 +144,16 @@ void Canvas::mousePressEvent(QMouseEvent *event)
         counter = 0;
     }
 
-    if (event->button() == Qt::LeftButton) {
-        lastPoint = event->pos();
-        scribbling = true;
+    //Selection Rectangle.
+    if (event->button()==Qt::RightButton && m_select){
+        selectionRect = QRect();
+        update();
+    }else{
+        if(m_select){
+            selectionStarted=true;
+            selectionRect.setTopLeft(event->pos());
+            selectionRect.setBottomRight(event->pos());
+        }
     }
 }
 
@@ -123,8 +162,15 @@ void Canvas::mousePressEvent(QMouseEvent *event)
 // from the last position to the current
 void Canvas::mouseMoveEvent(QMouseEvent *event)
 {
+    //Free Draw
     if ((event->buttons() & Qt::LeftButton) && scribbling && m_freedraw)
         drawLineTo(event->pos());
+
+    //Selection Rectangle.
+    if (selectionStarted){
+        selectionRect.setBottomRight(event->pos());
+        update();
+    }
 }
 
 // If the button is released we set variables to stop drawing
@@ -136,22 +182,27 @@ void Canvas::mouseReleaseEvent(QMouseEvent *event)
         scribbling = false;
     }
 
+    //Selection Rectangle.
+    selectionStarted=false;
+
+    // Transformation Translate.
+    if (event->button() == Qt::LeftButton && m_transformationTranslate) {
+        transformationTranslate(event->pos());
+    }
+
     // Line DDA
-    if (event->button() == Qt::LeftButton && scribbling && m_linedda && counter == 0) {
+    if (event->button() == Qt::LeftButton && m_linedda && counter == 0) {
         lineDDA(firstPoint, secondPoint);
-        scribbling = false;
     }
 
     // Line Bresenham
-    if (event->button() == Qt::LeftButton && scribbling && m_linebresenham && counter == 0) {
+    if (event->button() == Qt::LeftButton && m_linebresenham && counter == 0) {
         lineBresenham(firstPoint, secondPoint);
-        scribbling = false;
     }
 
     // Circle Bresenham
-    if (event->button() == Qt::LeftButton && scribbling && m_circlebresenham && counter == 0) {
+    if (event->button() == Qt::LeftButton && m_circlebresenham && counter == 0) {
         circleBresenham(firstPoint, secondPoint);
-        scribbling = false;
     }
 }
 
@@ -168,6 +219,9 @@ void Canvas::paintEvent(QPaintEvent *event)
     // Draws the rectangle where the image needs to
     // be updated
     painter.drawImage(dirtyRect, image, dirtyRect);
+
+    // Draws the selection rectangle.
+    painter.drawRect(selectionRect);
 }
 
 // Resize the image to slightly larger then the main window
@@ -246,6 +300,23 @@ void Canvas::print()
         painter.drawImage(0, 0, image);
     }
 #endif // QT_CONFIG(printdialog)
+}
+
+void Canvas::transformationTranslate(const QPoint &toPoint)
+{
+    QImage img;
+    QPainter painter(&image);
+    //p.save();
+
+    QRect tmp(selectionRect);
+    tmp.translate(toPoint.x(), toPoint.y());
+    painter.drawImage(tmp, image, selectionRect);
+
+    //img = image.copy(selectionRect);
+    //painter.drawImage(toPoint, img);
+    //painter.eraseRect(selectionRect);
+    //img.fill(bg_image_color);
+    update();
 }
 
 //Call for Line DDA Algorithm

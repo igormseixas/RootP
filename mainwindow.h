@@ -30,14 +30,10 @@ protected:
     //void closeEvent(QCloseEvent *event) override;
     void paintEvent(QPaintEvent *event) override;
 
-    void mousePressEvent(QMouseEvent *event) override;
-    void mouseMoveEvent(QMouseEvent *event) override;
-    void mouseReleaseEvent(QMouseEvent *event) override;
-
-    bool preferWhiteBackground() const { return m_prefer_image; }
+    bool preferWhiteBackground() const { return m_prefer_whitebg; }
 
     QPixmap m_tile;
-    bool m_prefer_image = false; //True if prefer White BackGround
+    bool m_prefer_whitebg = false; //True if prefer White BackGround
 
 private slots:
     void open();
@@ -45,8 +41,6 @@ private slots:
     void penColor();
     void penWidth();
     void about();
-
-    void transformationTranslate();
 
 private:
     Canvas *canvas;
@@ -65,9 +59,6 @@ private:
     QPoint firstPoint, secondPoint;
     int counter = 0;
 
-    bool selectionStarted;
-    QRect selectionRect;
-
     QMenu *saveAsMenu;
     QMenu *fileMenu;
     QMenu *optionMenu;
@@ -83,6 +74,8 @@ private:
     QAction *printAct;
     QAction *exitAct;
 
+    QAction *freeDrawAct;
+    QAction *selectAct;
     QAction *penColorAct;
     QAction *penWidthAct;
 
@@ -93,7 +86,6 @@ private:
     QAction *reflectyAct;
     QAction *reflectxyAct;
 
-    QActionGroup *rasterizationMenuGroup;
     QAction *lineddaAct;
     QAction *linebresenhamAct;
     QAction *circlebresenhamAct;
@@ -103,6 +95,6 @@ private:
 
     QAction *aboutAct;
 
-    QLabel *infoLabel;
+    QActionGroup *singleMenuGroup;
 };
 #endif // MAINWINDOW_H

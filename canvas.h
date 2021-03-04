@@ -33,6 +33,9 @@ public slots:
     void print();
 
     // Menus selections.
+    void setFreeDraw(bool new_mFreeDraw);
+    void setSelect(bool new_mSelect);
+    void setTransformationTranslate(bool new_mTransformationTranslate);
     void setLineDDA(bool new_mLinedda);
     void setLineBresenham(bool new_mLineBresenham);
     void setCircleBresenham(bool new_mCircleBresenham);
@@ -53,9 +56,15 @@ private:
     //Mouse events.
     QPoint firstPoint, secondPoint;
     int counter = 0;
+    //Selection Rectangle.
+    bool selectionStarted;
+    QRect selectionRect;
 
-    void drawLineTo(const QPoint &endPoint);
     void resizeImage(QImage *image, const QSize &newSize);
+
+     void drawLineTo(const QPoint &endPoint);
+
+    void transformationTranslate(const QPoint &toPoint);
 
     void lineDDA(const QPoint &fPoint, const QPoint &sPoint);
     void lineBresenham(const QPoint &fPoint, const QPoint &sPoint);
@@ -78,6 +87,8 @@ private:
 
     // Define in wich menu are.
     bool m_freedraw;
+    bool m_select;
+    bool m_transformationTranslate;
     bool m_linedda;
     bool m_linebresenham;
     bool m_circlebresenham;

@@ -6,8 +6,6 @@
 
 MainWindow::MainWindow()
 {
-    selectionStarted = false;
-
     canvas = new Canvas;
     setCentralWidget(canvas);
 
@@ -171,32 +169,6 @@ void MainWindow::paintEvent(QPaintEvent *event){
     }
 
     painter.drawImage(QPoint(0,0), updateCanvas);
-    painter.drawRect(selectionRect);
-}
-
-void MainWindow::mousePressEvent(QMouseEvent *event)
-{
-
-    if (event->button()==Qt::RightButton){
-        if (selectionRect.contains(event->pos())) transformationMenu->exec(this->mapToGlobal(event->pos()));
-    }else{
-        selectionStarted=true;
-        selectionRect.setTopLeft(event->pos());
-        selectionRect.setBottomRight(event->pos());
-    }
-}
-
-void MainWindow::mouseMoveEvent(QMouseEvent *event)
-{
-    if (selectionStarted){
-        selectionRect.setBottomRight(event->pos());
-        repaint();
-    }
-}
-
-void MainWindow::mouseReleaseEvent(QMouseEvent *)
-{
-    selectionStarted=false;
 }
 
 void MainWindow::createMenus(){
@@ -213,6 +185,8 @@ void MainWindow::createMenus(){
     fileMenu->addAction(exitAct);
 
     optionMenu = menuBar()->addMenu(tr("&Options"));
+    optionMenu->addAction(freeDrawAct);
+    optionMenu->addAction(selectAct);
     optionMenu->addAction(penColorAct);
     optionMenu->addAction(penWidthAct);
 
@@ -270,6 +244,14 @@ void MainWindow::createActions(){
     //END File Menu Acts.
 
     //Option Menu Acts.
+    freeDrawAct = new QAction(tr("Free Draw"), this);
+    freeDrawAct->setCheckable(true);
+    connect(freeDrawAct, &QAction::toggled, canvas, &Canvas::setFreeDraw);
+
+    selectAct = new QAction(tr("Select"), this);
+    selectAct->setCheckable(true);
+    connect(selectAct, &QAction::toggled, canvas, &Canvas::setSelect);
+
     penColorAct = new QAction(tr("&Pen Color..."), this);
     connect(penColorAct, SIGNAL(triggered()), this, SLOT(penColor()));
 
@@ -280,7 +262,8 @@ void MainWindow::createActions(){
     //Transformation Menu Acts.
     translateAct = new QAction(tr("&Translate"), this);
     translateAct->setStatusTip("Translate image");
-    connect(translateAct, &QAction::triggered, this, &MainWindow::transformationTranslate);
+    translateAct->setCheckable(true);
+    connect(translateAct, &QAction::toggled, canvas, &Canvas::setTransformationTranslate);
 
     rotateAct = new QAction(tr("&Rotate"), this);
 
@@ -323,11 +306,14 @@ void MainWindow::createActions(){
     //END Help Menu Acts.
 
     //Define Groups
-    rasterizationMenuGroup = new QActionGroup(this);
+    singleMenuGroup = new QActionGroup(this);
     //rasterizationMenuGroup->setExclusionPolicy(QActionGroup::ExclusionPolicy::ExclusiveOptional);
-    rasterizationMenuGroup->addAction(lineddaAct);
-    rasterizationMenuGroup->addAction(linebresenhamAct);
-    rasterizationMenuGroup->addAction(circlebresenhamAct);
+    singleMenuGroup->addAction(freeDrawAct);
+    singleMenuGroup->addAction(selectAct);
+    singleMenuGroup->addAction(translateAct);
+    singleMenuGroup->addAction(lineddaAct);
+    singleMenuGroup->addAction(linebresenhamAct);
+    singleMenuGroup->addAction(circlebresenhamAct);
 }
 
 bool MainWindow::maybeSave()
@@ -377,27 +363,5 @@ bool MainWindow::saveFile(const QByteArray &fileFormat)
         // Call for the file to be saved
         return canvas->saveImage(fileName, fileFormat.constData());
     }
-}
-
-void MainWindow::transformationTranslate()
-{
-    //QPixmap img;
-    QPainter p(&updateCanvas);
-    p.save();
-    //p.drawLine(40,40,200,200);
-    //p.translate(60, 60);
-    //p.drawRect(selectionRect);
-    //p.draw
-    //update();
-    QRect tmp(selectionRect);
-    //tmp.translate(100,0);
-    //p.drawImage(tmp, updateCanvas, selectionRect);
-
-    QImage img;
-    img = updateCanvas.copy(selectionRect);
-    p.drawImage(QPoint(50,50), img);
-
-    update();
-    //repaint();
 }
 
