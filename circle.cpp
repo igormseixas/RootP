@@ -1,4 +1,5 @@
 #include <QPainter>
+#include <QDebug>
 
 #include "circle.h"
 #include <math.h>
@@ -17,10 +18,10 @@ void Circle::bresenham(const QPoint *firstPoint, const QPoint *secondPoint, QPai
         x,y,d;
 
     //Inicialization.
+    r = sqrt(abs(((secondPoint->x()-firstPoint->x())*(secondPoint->x()-firstPoint->x()))
+                 +
+                 ((secondPoint->y()-firstPoint->y())*(secondPoint->y()-firstPoint->y()))));
 
-    r = sqrt(((secondPoint->x()-firstPoint->x())*(secondPoint->x()-firstPoint->x()))
-             -
-             ((secondPoint->y()-firstPoint->y())*(secondPoint->y()-firstPoint->y())));
     x = 0; y = r;
     d = 3-2*r;
     xc = firstPoint->x();
