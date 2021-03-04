@@ -1,3 +1,5 @@
+#include <QPainter>
+
 #include "circle.h"
 #include <math.h>
 
@@ -10,7 +12,7 @@ Circle::Circle()
  * @brief Circle::bresenham
  * Function to implement the Bresenham algorithm of a Circle.
  */
-void Circle::bresenham(QPoint *firstPoint, QPoint *secondPoint, QImage *canvas){
+void Circle::bresenham(const QPoint *firstPoint, const QPoint *secondPoint, QPainter *canvas){
     int xc, yc, r,
         x,y,d;
 
@@ -48,14 +50,14 @@ void Circle::bresenham(QPoint *firstPoint, QPoint *secondPoint, QImage *canvas){
  * @param x
  * @param y
  */
-void Circle::draw(int xc, int yc, int x, int y, QImage *canvas)
+void Circle::draw(int xc, int yc, int x, int y, QPainter *canvas)
 {
-    canvas->setPixel(xc+x, yc+y, qRgb(255,0,0));
-    canvas->setPixel(xc-x, yc+y, qRgb(255,0,0));
-    canvas->setPixel(xc+x, yc-y, qRgb(255,0,0));
-    canvas->setPixel(xc-x, yc-y, qRgb(255,0,0));
-    canvas->setPixel(xc+y, yc+x, qRgb(255,0,0));
-    canvas->setPixel(xc-y, yc+x, qRgb(255,0,0));
-    canvas->setPixel(xc+y, yc-x, qRgb(255,0,0));
-    canvas->setPixel(xc-y, yc-x, qRgb(255,0,0));
+    canvas->drawPoint(xc+x, yc+y);
+    canvas->drawPoint(xc-x, yc+y);
+    canvas->drawPoint(xc+x, yc-y);
+    canvas->drawPoint(xc-x, yc-y);
+    canvas->drawPoint(xc+y, yc+x);
+    canvas->drawPoint(xc-y, yc+x);
+    canvas->drawPoint(xc+y, yc-x);
+    canvas->drawPoint(xc-y, yc-x);
 }

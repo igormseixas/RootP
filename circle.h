@@ -10,10 +10,10 @@ public:
     Circle();
 
     //Algorithms
-    void bresenham(QPoint *, QPoint *, QImage *);
+    void bresenham(const QPoint *, const QPoint *, QPainter *);
 
 private:
-    void draw(int, int, int, int, QImage *);
+    void draw(int, int, int, int, QPainter *);
 };
 
 #endif // CIRCLE_H
