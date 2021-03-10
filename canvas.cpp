@@ -306,16 +306,14 @@ void Canvas::transformationTranslate(const QPoint &toPoint)
 {
     QImage img;
     QPainter painter(&image);
-    //p.save();
 
     QRect tmp(selectionRect);
-    tmp.translate(toPoint.x(), toPoint.y());
-    painter.drawImage(tmp, image, selectionRect);
+    painter.translate(0,0);
+    painter.translate(toPoint.x(),toPoint.y());
+    painter.translate(-200,-200);
+    painter.drawRect(tmp);
+    selectionRect = QRect();
 
-    //img = image.copy(selectionRect);
-    //painter.drawImage(toPoint, img);
-    //painter.eraseRect(selectionRect);
-    //img.fill(bg_image_color);
     update();
 }
 
