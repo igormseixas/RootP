@@ -266,8 +266,14 @@ void MainWindow::createActions(){
     connect(translateAct, &QAction::toggled, canvas, &Canvas::setTransformationTranslate);
 
     rotateAct = new QAction(tr("&Rotate"), this);
+    rotateAct->setStatusTip("Rotate image");
+    rotateAct->setCheckable(true);
+    connect(rotateAct, &QAction::toggled, canvas, &Canvas::setTransformationRotate);
 
     scaleAct = new QAction(tr("&Scale"), this);
+    scaleAct->setStatusTip("Rotate image");
+    scaleAct->setCheckable(true);
+    connect(scaleAct, &QAction::toggled, canvas, &Canvas::setTransformationScale);
 
     reflectxAct = new QAction(tr("&Reflection X"), this);
 
@@ -311,6 +317,8 @@ void MainWindow::createActions(){
     singleMenuGroup->addAction(freeDrawAct);
     singleMenuGroup->addAction(selectAct);
     singleMenuGroup->addAction(translateAct);
+    singleMenuGroup->addAction(rotateAct);
+    singleMenuGroup->addAction(scaleAct);
     singleMenuGroup->addAction(lineddaAct);
     singleMenuGroup->addAction(linebresenhamAct);
     singleMenuGroup->addAction(circlebresenhamAct);
