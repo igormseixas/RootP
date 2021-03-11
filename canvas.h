@@ -5,6 +5,7 @@
 #include <QImage>
 #include <QPoint>
 #include <QWidget>
+#include <QPainterPath>
 
 #include <line.h>
 #include <circle.h>
@@ -36,6 +37,9 @@ public slots:
     void setFreeDraw(bool new_mFreeDraw);
     void setSelect(bool new_mSelect);
     void setTransformationTranslate(bool new_mTransformationTranslate);
+    void setTransformationRotate(bool new_mTransformationRotate);
+    void setTransformationScale(bool new_mTransformationScale);
+
     void setLineDDA(bool new_mLinedda);
     void setLineBresenham(bool new_mLineBresenham);
     void setCircleBresenham(bool new_mCircleBresenham);
@@ -53,6 +57,8 @@ protected:
     void resizeEvent(QResizeEvent *event) override;
 
 private:
+    QPainterPath pp;
+
     //Mouse events.
     QPoint firstPoint, secondPoint;
     int counter = 0;
@@ -62,9 +68,7 @@ private:
 
     void resizeImage(QImage *image, const QSize &newSize);
 
-     void drawLineTo(const QPoint &endPoint);
-
-    void transformationTranslate(const QPoint &toPoint);
+    void drawLineTo(const QPoint &endPoint);
 
     void lineDDA(const QPoint &fPoint, const QPoint &sPoint);
     void lineBresenham(const QPoint &fPoint, const QPoint &sPoint);
@@ -89,6 +93,10 @@ private:
     bool m_freedraw;
     bool m_select;
     bool m_transformationTranslate;
+    bool m_transformationRotate;
+    qreal rotation;
+    bool m_transformationScale;
+    qreal scalation;
     bool m_linedda;
     bool m_linebresenham;
     bool m_circlebresenham;

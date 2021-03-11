@@ -27,6 +27,10 @@ Canvas::Canvas(QWidget *parent) : QWidget(parent)
     m_freedraw = false;
     m_select = false;
     m_transformationTranslate = false;
+    m_transformationRotate = false;
+    //rotation = 0;
+    m_transformationScale = false;
+    //scalation = 0;
     m_linedda = false;
     m_linebresenham = false;
     m_circlebresenham = false;
@@ -94,6 +98,18 @@ void Canvas::setTransformationTranslate(bool new_mTransformationTranslate)
     m_transformationTranslate = new_mTransformationTranslate;
 }
 
+// Used to set transformation rotate at menu.
+void Canvas::setTransformationRotate(bool new_mTransformationRotate)
+{
+    m_transformationRotate = new_mTransformationRotate;
+}
+
+// Used to set transformation scale at menu.
+void Canvas::setTransformationScale(bool new_mTransformationScale)
+{
+    m_transformationScale = new_mTransformationScale;
+}
+
 // Used to set if the menu Line DDA is accessed.
 void Canvas::setLineDDA(bool new_mLinedda)
 {
@@ -146,15 +162,23 @@ void Canvas::mousePressEvent(QMouseEvent *event)
 
     //Selection Rectangle.
     if (event->button()==Qt::RightButton && m_select){
-        selectionRect = QRect();
+        selectionRect =  QRect();
         update();
     }else{
         if(m_select){
             selectionStarted=true;
             selectionRect.setTopLeft(event->pos());
             selectionRect.setBottomRight(event->pos());
+            rotation = 0;
+            scalation = 1;
         }
     }
+
+    //Transformation Translate.
+    if (event->button() == Qt::LeftButton && m_transformationTranslate) {
+        lastPoint = event->pos();
+    }
+
 }
 
 // When the mouse moves if the left button is clicked
@@ -187,7 +211,17 @@ void Canvas::mouseReleaseEvent(QMouseEvent *event)
 
     // Transformation Translate.
     if (event->button() == Qt::LeftButton && m_transformationTranslate) {
-        transformationTranslate(event->pos());
+        update();
+    }
+
+    // Transformation Rotate.
+    if (event->button() == Qt::LeftButton && m_transformationRotate) {
+        update();
+    }
+
+    // Transformation Scale.
+    if (event->button() == Qt::LeftButton && m_transformationScale) {
+        update();
     }
 
     // Line DDA
@@ -212,6 +246,7 @@ void Canvas::mouseReleaseEvent(QMouseEvent *event)
 void Canvas::paintEvent(QPaintEvent *event)
 {
     QPainter painter(this);
+    QPoint center = selectionRect.center();
 
     // Returns the rectangle that needs to be updated
     QRect dirtyRect = event->rect();
@@ -220,8 +255,25 @@ void Canvas::paintEvent(QPaintEvent *event)
     // be updated
     painter.drawImage(dirtyRect, image, dirtyRect);
 
-    // Draws the selection rectangle.
-    painter.drawRect(selectionRect);
+    //Transformate if rectangle is draw.
+    if(m_transformationTranslate){
+        painter.translate(lastPoint.x()-selectionRect.x(),lastPoint.y()-selectionRect.y());
+        painter.drawRect(selectionRect);
+    }else if(m_transformationRotate){
+        painter.translate(center.x(), center.y());
+        rotation+=30;
+        painter.rotate(rotation);
+        painter.translate(-center.x(), -center.y());
+        painter.drawRect(selectionRect);
+    }else if(m_transformationScale){
+        painter.translate(center.x(), center.y());
+        scalation*=1.25;
+        painter.scale(scalation,scalation);
+        painter.translate(-center.x(), -center.y());
+        painter.drawRect(selectionRect);
+    }else{
+        painter.drawRect(selectionRect);
+    }
 }
 
 // Resize the image to slightly larger then the main window
@@ -300,21 +352,6 @@ void Canvas::print()
         painter.drawImage(0, 0, image);
     }
 #endif // QT_CONFIG(printdialog)
-}
-
-void Canvas::transformationTranslate(const QPoint &toPoint)
-{
-    QImage img;
-    QPainter painter(&image);
-
-    QRect tmp(selectionRect);
-    painter.translate(0,0);
-    painter.translate(toPoint.x(),toPoint.y());
-    painter.translate(-200,-200);
-    painter.drawRect(tmp);
-    selectionRect = QRect();
-
-    update();
 }
 
 //Call for Line DDA Algorithm
