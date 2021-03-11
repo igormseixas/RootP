@@ -65,6 +65,7 @@ private:
     //Selection Rectangle.
     bool selectionStarted;
     QRect selectionRect;
+    QTransform transform;
 
     void resizeImage(QImage *image, const QSize &newSize);
 
