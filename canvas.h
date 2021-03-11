@@ -39,6 +39,9 @@ public slots:
     void setTransformationTranslate(bool new_mTransformationTranslate);
     void setTransformationRotate(bool new_mTransformationRotate);
     void setTransformationScale(bool new_mTransformationScale);
+    void setTransformationReflectX(bool new_mTransformationReflectX);
+    void setTransformationReflectY(bool new_mTransformationReflectY);
+    void setTransformationReflectXY(bool new_mTransformationReflectXY);
 
     void setLineDDA(bool new_mLinedda);
     void setLineBresenham(bool new_mLineBresenham);
@@ -65,6 +68,7 @@ private:
     //Selection Rectangle.
     bool selectionStarted;
     QRect selectionRect;
+    QTransform transform;
 
     void resizeImage(QImage *image, const QSize &newSize);
 
@@ -97,6 +101,9 @@ private:
     qreal rotation;
     bool m_transformationScale;
     qreal scalation;
+    bool m_transformationReflectX;
+    bool m_transformationReflectY;
+    bool m_transformationReflectXY;
     bool m_linedda;
     bool m_linebresenham;
     bool m_circlebresenham;

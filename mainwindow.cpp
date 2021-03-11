@@ -276,10 +276,19 @@ void MainWindow::createActions(){
     connect(scaleAct, &QAction::toggled, canvas, &Canvas::setTransformationScale);
 
     reflectxAct = new QAction(tr("&Reflection X"), this);
+    reflectxAct->setStatusTip("Reflect image - X Axis");
+    reflectxAct->setCheckable(true);
+    connect(reflectxAct, &QAction::toggled, canvas, &Canvas::setTransformationReflectX);
 
     reflectyAct = new QAction(tr("&Reflection Y"), this);
+    reflectyAct->setStatusTip("Reflect image - Y Axis");
+    reflectyAct->setCheckable(true);
+    connect(reflectyAct, &QAction::toggled, canvas, &Canvas::setTransformationReflectY);
 
     reflectxyAct = new QAction(tr("&Reflection XY"), this);
+    reflectxyAct->setStatusTip("Reflect image - XY Axis");
+    reflectxyAct->setCheckable(true);
+    connect(reflectxyAct, &QAction::toggled, canvas, &Canvas::setTransformationReflectXY);
     //END Transformation Menu Acts.
 
     //Rasterization Menu Acts.
@@ -319,6 +328,9 @@ void MainWindow::createActions(){
     singleMenuGroup->addAction(translateAct);
     singleMenuGroup->addAction(rotateAct);
     singleMenuGroup->addAction(scaleAct);
+    singleMenuGroup->addAction(reflectxAct);
+    singleMenuGroup->addAction(reflectyAct);
+    singleMenuGroup->addAction(reflectxyAct);
     singleMenuGroup->addAction(lineddaAct);
     singleMenuGroup->addAction(linebresenhamAct);
     singleMenuGroup->addAction(circlebresenhamAct);

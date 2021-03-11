@@ -31,6 +31,9 @@ Canvas::Canvas(QWidget *parent) : QWidget(parent)
     //rotation = 0;
     m_transformationScale = false;
     //scalation = 0;
+    m_transformationReflectX = false;
+    m_transformationReflectY = false;
+    m_transformationReflectXY = false;
     m_linedda = false;
     m_linebresenham = false;
     m_circlebresenham = false;
@@ -110,6 +113,24 @@ void Canvas::setTransformationScale(bool new_mTransformationScale)
     m_transformationScale = new_mTransformationScale;
 }
 
+// Used to set transformation reflect X at menu.
+void Canvas::setTransformationReflectX(bool new_mTransformationReflectX)
+{
+    m_transformationReflectX = new_mTransformationReflectX;
+}
+
+// Used to set transformation reflect Y at menu.
+void Canvas::setTransformationReflectY(bool new_mTransformationReflectY)
+{
+    m_transformationReflectY = new_mTransformationReflectY;
+}
+
+// Used to set transformation reflect XY at menu.
+void Canvas::setTransformationReflectXY(bool new_mTransformationReflectXY)
+{
+    m_transformationReflectXY = new_mTransformationReflectXY;
+}
+
 // Used to set if the menu Line DDA is accessed.
 void Canvas::setLineDDA(bool new_mLinedda)
 {
@@ -169,6 +190,8 @@ void Canvas::mousePressEvent(QMouseEvent *event)
             selectionStarted=true;
             selectionRect.setTopLeft(event->pos());
             selectionRect.setBottomRight(event->pos());
+
+            transform.reset();
             rotation = 0;
             scalation = 1;
         }
@@ -211,6 +234,7 @@ void Canvas::mouseReleaseEvent(QMouseEvent *event)
 
     // Transformation Translate.
     if (event->button() == Qt::LeftButton && m_transformationTranslate) {
+        transform.reset();
         update();
     }
 
@@ -221,6 +245,11 @@ void Canvas::mouseReleaseEvent(QMouseEvent *event)
 
     // Transformation Scale.
     if (event->button() == Qt::LeftButton && m_transformationScale) {
+        update();
+    }
+
+    // Transformation Reflect X Axis, Reflect Y Axis, Reflect XY Axis.
+    if (event->button() == Qt::LeftButton && (m_transformationReflectX || m_transformationReflectY || m_transformationReflectXY)) {
         update();
     }
 
@@ -257,19 +286,49 @@ void Canvas::paintEvent(QPaintEvent *event)
 
     //Transformate if rectangle is draw.
     if(m_transformationTranslate){
-        painter.translate(lastPoint.x()-selectionRect.x(),lastPoint.y()-selectionRect.y());
+        transform.translate(lastPoint.x()-selectionRect.x(),lastPoint.y()-selectionRect.y());
+
+        painter.setTransform(transform);
         painter.drawRect(selectionRect);
     }else if(m_transformationRotate){
-        painter.translate(center.x(), center.y());
+        transform.translate(center.x(), center.y());
         rotation+=30;
-        painter.rotate(rotation);
-        painter.translate(-center.x(), -center.y());
+        transform.rotate(rotation);
+        transform.translate(-center.x(), -center.y());
+
+        painter.setTransform(transform);
         painter.drawRect(selectionRect);
     }else if(m_transformationScale){
-        painter.translate(center.x(), center.y());
+        transform.translate(center.x(), center.y());
         scalation*=1.25;
-        painter.scale(scalation,scalation);
-        painter.translate(-center.x(), -center.y());
+        transform.scale(scalation,scalation);
+        transform.translate(-center.x(), -center.y());
+
+        painter.setTransform(transform);
+        painter.drawRect(selectionRect);
+    }else if(m_transformationReflectX){
+        transform.translate(selectionRect.bottomLeft().x(), selectionRect.bottomLeft().y());
+        transform.rotate(180, Qt::XAxis);
+        transform.translate(-selectionRect.bottomLeft().x(), -selectionRect.bottomLeft().y());
+
+        painter.setTransform(transform);
+        painter.drawRect(selectionRect);
+    }else if(m_transformationReflectY){
+        transform.translate(selectionRect.topLeft().x(), selectionRect.topLeft().y());
+        transform.rotate(180, Qt::YAxis);
+        transform.translate(-selectionRect.topLeft().x(), -selectionRect.topLeft().y());
+
+        painter.setTransform(transform);
+        painter.drawRect(selectionRect);
+    }else if(m_transformationReflectXY){
+        transform.translate(selectionRect.bottomLeft().x(), selectionRect.bottomLeft().y());
+        transform.rotate(180, Qt::XAxis);
+        transform.translate(-selectionRect.bottomLeft().x(), -selectionRect.bottomLeft().y());
+        transform.translate(selectionRect.topLeft().x(), selectionRect.topLeft().y());
+        transform.rotate(180, Qt::YAxis);
+        transform.translate(-selectionRect.topLeft().x(), -selectionRect.topLeft().y());
+
+        painter.setTransform(transform);
         painter.drawRect(selectionRect);
     }else{
         painter.drawRect(selectionRect);
