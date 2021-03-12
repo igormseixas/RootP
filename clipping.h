@@ -3,6 +3,7 @@
 
 #include <QImage>
 #include <QPoint>
+#include <QDebug>
 
 #include <line.h>
 
@@ -14,6 +15,7 @@ public:
 
     //Algorithms
     void cohenSutherland(const QPoint *, const QPoint *, QPainter *);
+    void liangBarsky(const QPoint *, const QPoint *, QPainter *);
 
 private:
     // Global Vars
@@ -30,6 +32,7 @@ private:
     const int TOP = 8; // 1000
 
     int region_code(qreal x, qreal y);
+    bool clipTest(qreal p, qreal q, qreal *t1, qreal *t2);
 };
 
 #endif // CLIPPING_H

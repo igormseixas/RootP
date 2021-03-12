@@ -39,7 +39,7 @@ int Clipping::region_code(qreal x, qreal y)
 
 /**
  * @brief Clipping::cohenSutherland
- * Function to implement Cohen-Sutherland Algorithm.
+ * Function to implement Cohen-Sutherland Clipping Algorithm.
  * @param firstPoint
  * @param secondPoint
  * @param canvas
@@ -116,3 +116,79 @@ void Clipping::cohenSutherland(const QPoint *firstPoint, const QPoint *secondPoi
         lineCohenSutherland.bresenham(&point1, &point2, canvas);
     }
 }
+
+//Function to do Clipping test.
+bool Clipping::clipTest(qreal p, qreal q, qreal *t1, qreal *t2){
+    qreal r;
+    bool result = true;
+
+    //Line entry point.
+    if(p<0.0){
+        r=q/p;
+        if(r>*t2){
+            result = false;
+        }else if(r>*t1){
+            *t1=r;
+        }
+    // Line leaving point.
+    }else if(p>0.0){
+        r=q/p;
+        if(r<*t1){
+            result=false;
+        }else if(r<*t2){
+            *t2=r;
+        }
+    //P=0 Line is parallel and outside to the clipping area.
+    }else if(q<0.0){
+        result = false;
+    }
+
+    return result;
+}
+
+/**
+ * @brief Clipping::liangBarsky
+ * Function to implement Liang Barsky Clipping Algorithm.
+ * @param firstPoint
+ * @param secondPoint
+ * @param canvas
+ */
+void Clipping::liangBarsky(const QPoint *firstPoint, const QPoint *secondPoint, QPainter *canvas){
+    //Variables.
+    qreal t1, t2,
+          x1, y1,
+          x2, y2,
+          dx, dy;
+
+    Line lineLiangBarsky;
+    //Inicialization.
+    t1=0; t2=1.0;
+    x1=firstPoint->x(); y1=firstPoint->y();
+    x2=secondPoint->x(); y2=secondPoint->y();
+    dx = x2-x1;
+    dy = y2-y1;
+
+    //Test left.
+    if(clipTest(-dx, x1-xmin, &t1, &t2)){
+        //Test right.
+        if(clipTest(dx,xmax-x1,&t1,&t2)){
+            //Test bottom.
+            if(clipTest(-dy,y1-ymin,&t1,&t2)){
+                //Test top.
+                if(clipTest(dy,ymax-y1,&t1,&t2)){
+                    if(t2<1.0){
+                        x2=x1+t2*dx;
+                        y2=y1+t2*dy;
+                    }
+                    if(t1>0.0){
+                        x1=x1+t1*dx;
+                        y1=y1+t1*dy;
+                    }
+                    const QPoint point1(qRound(x1),qRound(y1)), point2(qRound(x2),qRound(y2));
+                    lineLiangBarsky.dda(&point1, &point2, canvas);
+                }
+            }
+        }
+    }
+}
+
