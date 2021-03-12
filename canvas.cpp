@@ -26,6 +26,7 @@ Canvas::Canvas(QWidget *parent) : QWidget(parent)
     //Set the access menus as false
     m_freedraw = false;
     m_select = false;
+    selection = false;
     m_transformationTranslate = false;
     m_transformationRotate = false;
     //rotation = 0;
@@ -37,6 +38,8 @@ Canvas::Canvas(QWidget *parent) : QWidget(parent)
     m_linedda = false;
     m_linebresenham = false;
     m_circlebresenham = false;
+    m_cohensutherland = false;
+    m_liangbarsky = false;
 }
 
 // Used to load the image and place it in the widget
@@ -152,6 +155,18 @@ void Canvas::setCircleBresenham(bool new_mCircleBresenham)
     counter = 0;
 }
 
+// Used to set if the menu Clipping Cohen-Sutherland is accessed.
+void Canvas::setCohenSutherland(bool new_mCohenSuther)
+{
+    m_cohensutherland = new_mCohenSuther;
+}
+
+// Used to set if the menu Clipping Liang-Barsky is accessed.
+void Canvas::setLiangBarsky(bool new_mLiangBarsky)
+{
+    m_liangbarsky = new_mLiangBarsky;
+}
+
 // Color the image area with white
 void Canvas::clearImage()
 {
@@ -230,7 +245,11 @@ void Canvas::mouseReleaseEvent(QMouseEvent *event)
     }
 
     //Selection Rectangle.
-    selectionStarted=false;
+    if (event->button() == Qt::LeftButton && m_select) {
+        selectionStarted=false;
+        selection = true;
+    }
+
 
     // Transformation Translate.
     if (event->button() == Qt::LeftButton && m_transformationTranslate) {
@@ -266,6 +285,11 @@ void Canvas::mouseReleaseEvent(QMouseEvent *event)
     // Circle Bresenham
     if (event->button() == Qt::LeftButton && m_circlebresenham && counter == 0) {
         circleBresenham(firstPoint, secondPoint);
+    }
+
+    // Clipping Cohen-Sutherland
+    if (event->button() == Qt::LeftButton && m_cohensutherland) {
+        update();
     }
 }
 
@@ -330,6 +354,13 @@ void Canvas::paintEvent(QPaintEvent *event)
 
         painter.setTransform(transform);
         painter.drawRect(selectionRect);
+    }else if(m_cohensutherland){
+        if(selection && counter==0){
+            painter.drawRect(selectionRect);
+            cohenSutherland(firstPoint, secondPoint);
+        }else{
+            painter.drawRect(selectionRect);
+        }
     }else{
         painter.drawRect(selectionRect);
     }
@@ -464,6 +495,27 @@ void Canvas::circleBresenham(const QPoint &fPoint, const QPoint &sPoint)
     // Used to draw on the widget
     circle = new Circle();
     circle->bresenham(&fPoint, &sPoint, &painter);
+    update();
+
+    // Set that the image hasn't been saved
+    modified = true;
+}
+
+//Call for Cohen-Sutherland Clipping
+void Canvas::cohenSutherland(const QPoint &fPoint, const QPoint &sPoint)
+{
+    // Used to draw on the widget
+    QPainter painter(&image);
+
+    // Set the current settings for the pen
+    painter.setPen(QPen(myPenColor, myPenWidth, Qt::SolidLine, Qt::RoundCap,
+                        Qt::RoundJoin));
+
+    // Used to draw on the widget
+    QPoint topLeft = selectionRect.topLeft(),
+           bottonRight = selectionRect.bottomRight();
+    clipping = new Clipping(&topLeft, &bottonRight);
+    clipping->cohenSutherland(&fPoint, &sPoint, &painter);
     update();
 
     // Set that the image hasn't been saved

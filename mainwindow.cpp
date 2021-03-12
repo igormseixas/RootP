@@ -101,7 +101,7 @@ void MainWindow::penWidth()
     // the next tr is the text to display
     // Get the current pen width
     // Define the min, max, step and ok button
-    int newWidth = QInputDialog::getInt(this, tr("Scribble"),
+    int newWidth = QInputDialog::getInt(this, tr("Canvas"),
                                         tr("Select pen width:"),
                                         canvas->penWidth(),
                                         1, 50, 1, &ok);
@@ -205,9 +205,9 @@ void MainWindow::createMenus(){
     rasterizationMenu->addAction(linebresenhamAct);
     rasterizationMenu->addAction(circlebresenhamAct);
 
-    cutsMenu = menuBar()->addMenu(tr("Cuts"));
-    cutsMenu->addAction(cohensutherAct);
-    cutsMenu->addAction(liangbarskyAct);
+    clippingMenu = menuBar()->addMenu(tr("Clipping"));
+    clippingMenu->addAction(cohensutherAct);
+    clippingMenu->addAction(liangbarskyAct);
 
     helpMenu = menuBar()->addMenu(tr("&Help"));
     helpMenu->addAction(aboutAct);
@@ -312,7 +312,14 @@ void MainWindow::createActions(){
 
     //Cuts Menu Acts.
     cohensutherAct = new QAction(tr("&Code Regions/Cohen-Sutherland"), this);
+    cohensutherAct->setStatusTip("Clipping with Cohen-Sutherland Algorithm");
+    cohensutherAct->setCheckable(true);
+    connect(cohensutherAct, &QAction::toggled, canvas, &Canvas::setCohenSutherland);
+
     liangbarskyAct = new QAction(tr("&Parametric Equations/Liang-Barsky"), this);
+    liangbarskyAct->setStatusTip("Clipping with Liang-Barsky Algorithm");
+    liangbarskyAct->setCheckable(true);
+    connect(liangbarskyAct, &QAction::toggled, canvas, &Canvas::setLiangBarsky);
     //END Cuts Menu Acts.
 
     //Help Menu Acts.
@@ -334,6 +341,8 @@ void MainWindow::createActions(){
     singleMenuGroup->addAction(lineddaAct);
     singleMenuGroup->addAction(linebresenhamAct);
     singleMenuGroup->addAction(circlebresenhamAct);
+    singleMenuGroup->addAction(cohensutherAct);
+    singleMenuGroup->addAction(liangbarskyAct);
 }
 
 bool MainWindow::maybeSave()
@@ -344,7 +353,7 @@ bool MainWindow::maybeSave()
 
        // Scribble is the title
        // Add text and the buttons
-       ret = QMessageBox::warning(this, tr("Scribble"),
+       ret = QMessageBox::warning(this, tr("Canvas"),
                           tr("The image has been modified.\n"
                              "Do you want to save your changes?"),
                           QMessageBox::Save | QMessageBox::Discard
