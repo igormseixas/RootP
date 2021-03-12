@@ -9,6 +9,7 @@
 
 #include <line.h>
 #include <circle.h>
+#include <clipping.h>
 
 class Canvas : public QWidget
 {
@@ -47,6 +48,9 @@ public slots:
     void setLineBresenham(bool new_mLineBresenham);
     void setCircleBresenham(bool new_mCircleBresenham);
 
+    void setCohenSutherland(bool new_mCohenSuther);
+    void setLiangBarsky(bool new_mLiangBarsky);
+
 protected:
     void mousePressEvent(QMouseEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;
@@ -78,8 +82,11 @@ private:
     void lineBresenham(const QPoint &fPoint, const QPoint &sPoint);
     void circleBresenham(const QPoint &fPoint, const QPoint &sPoint);
 
+    void cohenSutherland(const QPoint &fPoint, const QPoint &sPoint);
+
     Line *line;
     Circle *circle;
+    Clipping *clipping;
 
     // Define the color and oppacity of background color.
     const int oppacity = 0;
@@ -96,6 +103,7 @@ private:
     // Define in wich menu are.
     bool m_freedraw;
     bool m_select;
+    bool selection;
     bool m_transformationTranslate;
     bool m_transformationRotate;
     qreal rotation;
@@ -107,6 +115,8 @@ private:
     bool m_linedda;
     bool m_linebresenham;
     bool m_circlebresenham;
+    bool m_cohensutherland;
+    bool m_liangbarsky;
 
     // Holds the current pen width & color
     int myPenWidth;

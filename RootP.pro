@@ -11,6 +11,7 @@ CONFIG += c++11
 SOURCES += \
     canvas.cpp \
     circle.cpp \
+    clipping.cpp \
     line.cpp \
     main.cpp \
     mainwindow.cpp
@@ -18,6 +19,7 @@ SOURCES += \
 HEADERS += \
     canvas.h \
     circle.h \
+    clipping.h \
     line.h \
     mainwindow.h
 

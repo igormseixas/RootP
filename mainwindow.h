@@ -65,7 +65,7 @@ private:
     QMenu *transformationMenu;
     QMenu *reflectionMenu;
     QMenu *rasterizationMenu;
-    QMenu *cutsMenu;
+    QMenu *clippingMenu;
     QMenu *helpMenu;
 
     QAction *newAct;
