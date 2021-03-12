@@ -248,6 +248,7 @@ void Canvas::mouseReleaseEvent(QMouseEvent *event)
     if (event->button() == Qt::LeftButton && m_select) {
         selectionStarted=false;
         selection = true;
+        counter = 0;
     }
 
 
@@ -289,6 +290,11 @@ void Canvas::mouseReleaseEvent(QMouseEvent *event)
 
     // Clipping Cohen-Sutherland
     if (event->button() == Qt::LeftButton && m_cohensutherland) {
+        update();
+    }
+
+    // Clipping Liang-Barsky
+    if (event->button() == Qt::LeftButton && m_liangbarsky) {
         update();
     }
 }
@@ -358,6 +364,13 @@ void Canvas::paintEvent(QPaintEvent *event)
         if(selection && counter==0){
             painter.drawRect(selectionRect);
             cohenSutherland(firstPoint, secondPoint);
+        }else{
+            painter.drawRect(selectionRect);
+        }
+    }else if(m_liangbarsky && counter==0){
+        if(selection){
+            painter.drawRect(selectionRect);
+            liangBarsky(firstPoint, secondPoint);
         }else{
             painter.drawRect(selectionRect);
         }
@@ -516,6 +529,27 @@ void Canvas::cohenSutherland(const QPoint &fPoint, const QPoint &sPoint)
            bottonRight = selectionRect.bottomRight();
     clipping = new Clipping(&topLeft, &bottonRight);
     clipping->cohenSutherland(&fPoint, &sPoint, &painter);
+    update();
+
+    // Set that the image hasn't been saved
+    modified = true;
+}
+
+//Call for Liang-Barsky Clipping
+void Canvas::liangBarsky(const QPoint &fPoint, const QPoint &sPoint)
+{
+    // Used to draw on the widget
+    QPainter painter(&image);
+
+    // Set the current settings for the pen
+    painter.setPen(QPen(myPenColor, myPenWidth, Qt::SolidLine, Qt::RoundCap,
+                        Qt::RoundJoin));
+
+    // Used to draw on the widget
+    QPoint topLeft = selectionRect.topLeft(),
+           bottonRight = selectionRect.bottomRight();
+    clipping = new Clipping(&topLeft, &bottonRight);
+    clipping->liangBarsky(&fPoint, &sPoint, &painter);
     update();
 
     // Set that the image hasn't been saved

@@ -83,6 +83,7 @@ private:
     void circleBresenham(const QPoint &fPoint, const QPoint &sPoint);
 
     void cohenSutherland(const QPoint &fPoint, const QPoint &sPoint);
+    void liangBarsky(const QPoint &fPoint, const QPoint &sPoint);
 
     Line *line;
     Circle *circle;
